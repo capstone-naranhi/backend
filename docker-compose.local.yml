@@ -1,0 +1,15 @@
+version: '3.9'
+
+# 로컬 전용 포트 노출
+services:
+  mysql:
+    ports:
+      - "3306:3306"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    ports:
+      - "27017:27017"

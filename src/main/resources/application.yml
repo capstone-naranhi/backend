@@ -1,0 +1,7 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILTES_ACTIVE:local}
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
