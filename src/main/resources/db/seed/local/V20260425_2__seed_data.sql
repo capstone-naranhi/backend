@@ -45,9 +45,10 @@ VALUES (1, TRUE, TRUE, TRUE, TRUE, TRUE, '22:00:00', '07:00:00', NOW(6), NOW(6))
 
 -- ── notification (SAFETY) ─────────────────────────────────────
 INSERT INTO notification (type, sent_at, created_at, updated_at)
-VALUES ('SAFETY', NOW(6), NOW(6), NOW(6)),   -- id=1
-       ('DEVICE', NOW(6), NOW(6), NOW(6)),   -- id=2
-       ('GENERAL', NOW(6), NOW(6), NOW(6));  -- id=3
+VALUES ('SAFETY', NOW(6), NOW(6), NOW(6)), -- id=1
+       ('DEVICE', NOW(6), NOW(6), NOW(6)), -- id=2
+       ('GENERAL', NOW(6), NOW(6), NOW(6));
+-- id=3
 
 -- ── notification_recipient ────────────────────────────────────
 INSERT INTO notification_recipient (notification_id, member_id, is_read, read_at, is_sent, sent_at, created_at,
@@ -58,20 +59,20 @@ VALUES (1, 1, FALSE, NULL, TRUE, NOW(6), NOW(6), NOW(6)),
 
 -- ── safety_event ──────────────────────────────────────────────
 INSERT INTO safety_event (device_id, event_type, severity, confidence, duration_second, detected_at, snapshot_url,
-                           video_url, created_at, updated_at)
+                          video_url, created_at, updated_at)
 VALUES (1, 'CRYING', 'CAUTION', 0.9200, 30, NOW(6), NULL, NULL, NOW(6), NOW(6)),
        (1, 'FALL', 'DANGER', 0.9800, 5, NOW(6), NULL, NULL, NOW(6), NOW(6));
 
 -- ── safety_notification ───────────────────────────────────────
 INSERT INTO safety_notification (notification_id, safety_event_id, device_id, event_type, severity, created_at,
-                                  updated_at)
+                                 updated_at)
 VALUES (1, 1, 1, 'CRYING', 'CAUTION', NOW(6), NOW(6));
 
 -- ── device_notification ───────────────────────────────────────
 INSERT INTO device_notification (notification_id, device_id, component_type, before_status, current_status,
-                                  description, created_at, updated_at)
+                                 description, created_at, updated_at)
 VALUES (2, 2, 'BOARD', 'ONLINE', 'OFFLINE', '연결 끊김', NOW(6), NOW(6));
 
 -- ── general_notification ──────────────────────────────────────
 INSERT INTO general_notification (notification_id, detail_type, title, content, created_at, updated_at)
-VALUES (3, 'REPORT_AD', '주간 리포트가 생성되었습니다', '이번 주 아이의 수면 리포트를 확인해보세요.', NOW(6), NOW(6));
+VALUES (3, 'REPORT', '주간 리포트가 생성되었습니다', '이번 주 아이의 수면 리포트를 확인해보세요.', NOW(6), NOW(6));
