@@ -13,6 +13,8 @@ public enum ErrorCode {
 
     DEVICE_NOT_FOUND("DEVICE_404", HttpStatus.NOT_FOUND, "디바이스를 찾을 수 없습니다."),
     DEVICE_ACCESS_DENIED("DEVICE_403", HttpStatus.FORBIDDEN, "해당 디바이스에 접근 권한이 없습니다."),
+
+    NOTIFICATION_NOT_FOUND("NOTIFICATION_404", HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
     ;
 
     private final String code;

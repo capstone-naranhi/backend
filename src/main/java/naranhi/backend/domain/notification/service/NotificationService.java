@@ -14,6 +14,8 @@ import naranhi.backend.domain.notification.repository.DeviceNotificationReposito
 import naranhi.backend.domain.notification.repository.GeneralNotificationRepository;
 import naranhi.backend.domain.notification.repository.NotificationRecipientRepository;
 import naranhi.backend.domain.notification.repository.SafetyNotificationRepository;
+import naranhi.backend.global.exception.CustomException;
+import naranhi.backend.global.exception.ErrorCode;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,14 @@ public class NotificationService {
     private final SafetyNotificationRepository safetyNotificationRepository;
     private final DeviceNotificationRepository deviceNotificationRepository;
     private final GeneralNotificationRepository generalNotificationRepository;
+
+    @Transactional
+    public void readNotification(Long notificationId, Long memberId) {
+        NotificationRecipient recipient = notificationRecipientRepository
+                .findByNotificationIdAndMemberId(notificationId, memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+        recipient.markAsRead();
+    }
 
     public NotificationResponse.UnreadCount getUnreadCount(Long memberId) {
         long count = notificationRecipientRepository.countUnreadByMemberId(memberId);

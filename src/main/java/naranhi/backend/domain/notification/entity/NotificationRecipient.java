@@ -42,4 +42,9 @@ public class NotificationRecipient extends BaseEntity {
 
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
+
+    public void markAsRead() {
+        this.isRead = true;
+        this.readAt = LocalDateTime.now();
+    }
 }

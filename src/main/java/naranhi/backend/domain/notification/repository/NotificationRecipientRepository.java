@@ -45,4 +45,14 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
             AND nr.isRead = false
             """)
     long countUnreadByMemberId(@Param("memberId") Long memberId);
+
+    @Query("""
+            SELECT nr FROM NotificationRecipient nr
+            WHERE nr.notification.id = :notificationId
+            AND nr.member.id = :memberId
+            """)
+    java.util.Optional<NotificationRecipient> findByNotificationIdAndMemberId(
+            @Param("notificationId") Long notificationId,
+            @Param("memberId") Long memberId
+    );
 }

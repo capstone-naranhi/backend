@@ -6,6 +6,8 @@ import naranhi.backend.domain.notification.entity.NotificationType;
 import naranhi.backend.domain.notification.service.NotificationService;
 import naranhi.backend.global.response.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController {
 
     private final NotificationService notificationService;
+
+    @PatchMapping("/{notificationId}/read")
+    public ApiResponse<Void> readNotification(
+            @PathVariable Long notificationId,
+            @RequestParam Long memberId
+    ) {
+        notificationService.readNotification(notificationId, memberId);
+        return ApiResponse.ok(null);
+    }
 
     @GetMapping("/unread-count")
     public ApiResponse<NotificationResponse.UnreadCount> getUnreadCount(
