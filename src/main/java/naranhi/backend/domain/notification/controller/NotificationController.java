@@ -17,6 +17,13 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @GetMapping("/unread-count")
+    public ApiResponse<NotificationResponse.UnreadCount> getUnreadCount(
+            @RequestParam Long memberId
+    ) {
+        return ApiResponse.ok(notificationService.getUnreadCount(memberId));
+    }
+
     @GetMapping
     public ApiResponse<NotificationResponse.NotificationList> getNotificationList(
             @RequestParam Long memberId,

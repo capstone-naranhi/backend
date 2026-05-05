@@ -30,12 +30,19 @@ public class NotificationService {
     private final DeviceNotificationRepository deviceNotificationRepository;
     private final GeneralNotificationRepository generalNotificationRepository;
 
+    public NotificationResponse.UnreadCount getUnreadCount(Long memberId) {
+        long count = notificationRecipientRepository.countUnreadByMemberId(memberId);
+        return new NotificationResponse.UnreadCount(count);
+    }
+
     public NotificationResponse.NotificationList getNotificationList(
             Long memberId, NotificationType type, Long cursorId
     ) {
         List<NotificationRecipient> fetchedNotification = (type == null)
-                ? notificationRecipientRepository.findByMemberWithCursor(memberId, cursorId, PageRequest.of(0, PAGE_SIZE + 1))
-                : notificationRecipientRepository.findByMemberAndTypeWithCursor(memberId, type, cursorId, PageRequest.of(0, PAGE_SIZE + 1));
+                ? notificationRecipientRepository.findByMemberWithCursor(memberId, cursorId,
+                PageRequest.of(0, PAGE_SIZE + 1))
+                : notificationRecipientRepository.findByMemberAndTypeWithCursor(memberId, type, cursorId,
+                        PageRequest.of(0, PAGE_SIZE + 1));
 
         boolean hasNext = fetchedNotification.size() > PAGE_SIZE;
         List<NotificationRecipient> pageNotification =

@@ -38,4 +38,11 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
             @Param("cursorId") Long cursorId,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT COUNT(nr) FROM NotificationRecipient nr
+            WHERE nr.member.id = :memberId
+            AND nr.isRead = false
+            """)
+    long countUnreadByMemberId(@Param("memberId") Long memberId);
 }

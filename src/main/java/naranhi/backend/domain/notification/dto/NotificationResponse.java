@@ -19,6 +19,8 @@ public class NotificationResponse {
             boolean hasNext
     ) {}
 
+    public record UnreadCount(long unreadCount) {}
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record NotificationItem(
             Long notificationId,
