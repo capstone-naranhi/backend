@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GeneralNotificationRepository extends JpaRepository<GeneralNotification, Long> {
 
@@ -14,4 +15,6 @@ public interface GeneralNotificationRepository extends JpaRepository<GeneralNoti
             WHERE gn.notification.id IN :notificationIds
             """)
     List<GeneralNotification> findByNotificationIds(@Param("notificationIds") List<Long> notificationIds);
+
+    Optional<GeneralNotification> findByNotificationId(Long notificationId);
 }

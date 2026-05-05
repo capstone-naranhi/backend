@@ -19,6 +19,14 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @GetMapping("/{notificationId}")
+    public ApiResponse<NotificationResponse.NotificationDetail> getNotificationDetail(
+            @PathVariable Long notificationId,
+            @RequestParam Long memberId
+    ) {
+        return ApiResponse.ok(notificationService.getNotificationDetail(notificationId, memberId));
+    }
+
     @PatchMapping("/{notificationId}/read")
     public ApiResponse<Void> readNotification(
             @PathVariable Long notificationId,
