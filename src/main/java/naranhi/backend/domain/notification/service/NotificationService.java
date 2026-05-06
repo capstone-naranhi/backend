@@ -93,36 +93,51 @@ public class NotificationService {
         List<NotificationRecipient> pageNotification =
                 hasNext ? fetchedNotification.subList(0, PAGE_SIZE) : fetchedNotification;
 
-        Map<Long, SafetyNotification> safetyMap = fetchSafetyMap(pageNotification);
-        Map<Long, DeviceNotification> deviceMap = fetchDeviceMap(pageNotification);
-        Map<Long, GeneralNotification> generalMap = fetchGeneralMap(pageNotification);
-
-        List<NotificationResponse.NotificationItem> items = pageNotification.stream()
-                .map(nr -> toItem(nr, safetyMap, deviceMap, generalMap))
-                .toList();
+        List<NotificationResponse.NotificationItem> items = buildItems(pageNotification);
 
         Long nextCursorId = hasNext ? pageNotification.getLast().getNotification().getId() : null;
 
         return NotificationResponse.NotificationList.of(items, nextCursorId, hasNext);
     }
 
+    public List<NotificationResponse.NotificationItem> getRecentNotifications(Long memberId, int limit) {
+        List<NotificationRecipient> recipients = notificationRecipientRepository
+                .findByMemberWithCursor(memberId, null, PageRequest.of(0, limit));
+        return buildItems(recipients);
+    }
+
+    private List<NotificationResponse.NotificationItem> buildItems(List<NotificationRecipient> recipients) {
+        Map<Long, SafetyNotification> safetyMap = fetchSafetyMap(recipients);
+        Map<Long, DeviceNotification> deviceMap = fetchDeviceMap(recipients);
+        Map<Long, GeneralNotification> generalMap = fetchGeneralMap(recipients);
+        return recipients.stream()
+                .map(nr -> toItem(nr, safetyMap, deviceMap, generalMap))
+                .toList();
+    }
+
     private Map<Long, SafetyNotification> fetchSafetyMap(List<NotificationRecipient> page) {
         List<Long> safetyIds = filterNotificationType(page, NotificationType.SAFETY);
-        if (safetyIds.isEmpty()) return Map.of();
+        if (safetyIds.isEmpty()) {
+            return Map.of();
+        }
         return safetyNotificationRepository.findByNotificationIds(safetyIds).stream()
                 .collect(Collectors.toMap(sn -> sn.getNotification().getId(), sn -> sn));
     }
 
     private Map<Long, DeviceNotification> fetchDeviceMap(List<NotificationRecipient> page) {
         List<Long> deviceIds = filterNotificationType(page, NotificationType.DEVICE);
-        if (deviceIds.isEmpty()) return Map.of();
+        if (deviceIds.isEmpty()) {
+            return Map.of();
+        }
         return deviceNotificationRepository.findByNotificationIds(deviceIds).stream()
                 .collect(Collectors.toMap(dn -> dn.getNotification().getId(), dn -> dn));
     }
 
     private Map<Long, GeneralNotification> fetchGeneralMap(List<NotificationRecipient> page) {
         List<Long> generalIds = filterNotificationType(page, NotificationType.GENERAL);
-        if (generalIds.isEmpty()) return Map.of();
+        if (generalIds.isEmpty()) {
+            return Map.of();
+        }
         return generalNotificationRepository.findByNotificationIds(generalIds).stream()
                 .collect(Collectors.toMap(gn -> gn.getNotification().getId(), gn -> gn));
     }
@@ -150,15 +165,21 @@ public class NotificationService {
         switch (type) {
             case SAFETY -> {
                 SafetyNotification sn = safetyMap.get(notificationId);
-                if (sn != null) safetyDetail = NotificationResponse.SafetyDetail.from(sn);
+                if (sn != null) {
+                    safetyDetail = NotificationResponse.SafetyDetail.from(sn);
+                }
             }
             case DEVICE -> {
                 DeviceNotification dn = deviceMap.get(notificationId);
-                if (dn != null) deviceDetail = NotificationResponse.DeviceDetail.from(dn);
+                if (dn != null) {
+                    deviceDetail = NotificationResponse.DeviceDetail.from(dn);
+                }
             }
             case GENERAL -> {
                 GeneralNotification gn = generalMap.get(notificationId);
-                if (gn != null) generalDetail = NotificationResponse.GeneralDetail.from(gn);
+                if (gn != null) {
+                    generalDetail = NotificationResponse.GeneralDetail.from(gn);
+                }
             }
         }
 

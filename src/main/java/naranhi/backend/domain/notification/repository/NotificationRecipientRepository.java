@@ -47,6 +47,18 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
     long countUnreadByMemberId(@Param("memberId") Long memberId);
 
     @Query("""
+            SELECT COUNT(nr) FROM NotificationRecipient nr
+            WHERE nr.member.id = :memberId
+            AND nr.notification.sentAt >= :start
+            AND nr.notification.sentAt < :end
+            """)
+    long countTodayByMemberId(
+            @Param("memberId") Long memberId,
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end") java.time.LocalDateTime end
+    );
+
+    @Query("""
             SELECT nr FROM NotificationRecipient nr
             WHERE nr.notification.id = :notificationId
             AND nr.member.id = :memberId
