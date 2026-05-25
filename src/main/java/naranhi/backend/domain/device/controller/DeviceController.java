@@ -17,6 +17,21 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
+    @GetMapping("/{deviceId}")
+    public ApiResponse<DeviceResponse.DeviceDetail> getDeviceDetail(
+            @PathVariable Long deviceId,
+            @RequestParam Long memberId
+    ) {
+        return ApiResponse.ok(deviceService.getDeviceDetail(memberId, deviceId));
+    }
+
+    @GetMapping
+    public ApiResponse<DeviceResponse.DeviceList> getDevices(
+            @RequestParam Long memberId
+    ) {
+        return ApiResponse.ok(deviceService.getDevices(memberId));
+    }
+
     @GetMapping("/{deviceId}/live-status")
     public ApiResponse<DeviceResponse.LiveStreamStatus> getLiveStreamStatus(
             @PathVariable Long deviceId,
