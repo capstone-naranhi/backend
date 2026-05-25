@@ -5,3 +5,7 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+
+  firebase:
+    service-account:
+      path: "firebase/service-account.json"

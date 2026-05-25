@@ -48,6 +48,9 @@ dependencies {
     // ── Docker Compose ───────────────────────────────────────────────────
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 
+    // ── FCM ───────────────────────────────────────────────────
+    implementation 'com.google.firebase:firebase-admin:9.9.0'
+
     // ── Test ───────────────────────────────────────────────────────────────
     // Spring Boot Test Starters
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
