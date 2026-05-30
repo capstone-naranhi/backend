@@ -1,9 +1,7 @@
-package naranhi.backend.fcm.entity;
+package naranhi.backend.domain.notification.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,30 +23,35 @@ import naranhi.backend.global.entity.BaseEntity;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Entity
-@Table(name = "fcm_token")
-public class FcmToken extends BaseEntity {
+@Table(name = "notification_recipient")
+public class NotificationRecipient extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notification_id", nullable = false)
+    private Notification notification;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(name = "token", nullable = false, length = 500)
-    private String token;
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead;
 
-    @Column(name = "device_id", nullable = false, length = 100)
-    private String deviceId;
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "platform_type", nullable = false, length = 10)
-    private PlatformType platformType;
+    @Column(name = "is_sent", nullable = false)
+    private boolean isSent;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
+    @Column(name = "sent_at")
+    private LocalDateTime sentAt;
 
-    @Column(name = "last_used_at")
-    private LocalDateTime lastUsedAt;
+    public void markAsRead() {
+        this.isRead = true;
+        this.readAt = LocalDateTime.now();
+    }
 }

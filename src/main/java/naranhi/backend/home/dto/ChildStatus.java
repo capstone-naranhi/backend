@@ -1,6 +1,6 @@
 package naranhi.backend.home.dto;
 
-import naranhi.backend.safety.entity.SafetyEvent;
+import naranhi.backend.domain.safety.entity.SafetyEvent;
 
 public enum ChildStatus {
     SAFE, DANGER, CAUTION, INFO;

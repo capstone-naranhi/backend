@@ -32,8 +32,9 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     // ── Security / Session ─────────────────────────────────────────────────
-    // implementation 'org.springframework.boot:spring-boot-starter-security'
-    // implementation 'org.springframework.boot:spring-boot-starter-session-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-session-data-redis'
+    implementation 'org.springframework.security:spring-security-crypto'
 
     // ── Validation ─────────────────────────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-validation'

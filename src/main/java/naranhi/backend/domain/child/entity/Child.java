@@ -1,4 +1,4 @@
-package naranhi.backend.fcm.entity;
+package naranhi.backend.domain.child.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,8 +25,8 @@ import naranhi.backend.global.entity.BaseEntity;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Entity
-@Table(name = "fcm_token")
-public class FcmToken extends BaseEntity {
+@Table(name = "child")
+public class Child extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,19 +36,16 @@ public class FcmToken extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(name = "token", nullable = false, length = 500)
-    private String token;
+    @Column(name = "name", nullable = false, length = 20)
+    private String name;
 
-    @Column(name = "device_id", nullable = false, length = 100)
-    private String deviceId;
+    @Column(name = "birth_date", nullable = false)
+    private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "platform_type", nullable = false, length = 10)
-    private PlatformType platformType;
+    @Column(name = "gender", nullable = false, length = 6)
+    private Gender gender;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
-
-    @Column(name = "last_used_at")
-    private LocalDateTime lastUsedAt;
+    @Column(name = "img_url", length = 255)
+    private String imgUrl;
 }

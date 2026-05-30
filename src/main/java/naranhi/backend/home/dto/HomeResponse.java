@@ -2,10 +2,10 @@ package naranhi.backend.home.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import naranhi.backend.device.entity.Device;
-import naranhi.backend.device.entity.DeviceStatus;
-import naranhi.backend.notification.dto.NotificationResponse;
-import naranhi.backend.safety.entity.SafetyEvent;
+import naranhi.backend.domain.device.entity.Device;
+import naranhi.backend.domain.device.entity.DeviceStatus;
+import naranhi.backend.domain.notification.dto.NotificationResponse;
+import naranhi.backend.domain.safety.entity.SafetyEvent;
 
 public class HomeResponse {
 

@@ -1,4 +1,4 @@
-package naranhi.backend.fcm.entity;
+package naranhi.backend.domain.safety.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,13 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import naranhi.backend.domain.member.entity.Member;
+import naranhi.backend.domain.device.entity.Device;
 import naranhi.backend.global.entity.BaseEntity;
 
 @Getter
@@ -25,30 +26,37 @@ import naranhi.backend.global.entity.BaseEntity;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Entity
-@Table(name = "fcm_token")
-public class FcmToken extends BaseEntity {
+@Table(name = "safety_event")
+public class SafetyEvent extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
-
-    @Column(name = "token", nullable = false, length = 500)
-    private String token;
-
-    @Column(name = "device_id", nullable = false, length = 100)
-    private String deviceId;
+    @JoinColumn(name = "device_id", nullable = false)
+    private Device device;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "platform_type", nullable = false, length = 10)
-    private PlatformType platformType;
+    @Column(name = "event_type", nullable = false, length = 30)
+    private EventType eventType;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "severity", nullable = false, length = 10)
+    private Severity severity;
 
-    @Column(name = "last_used_at")
-    private LocalDateTime lastUsedAt;
+    @Column(name = "confidence", precision = 5, scale = 4)
+    private BigDecimal confidence;
+
+    @Column(name = "duration_second")
+    private Integer durationSecond;
+
+    @Column(name = "detected_at", nullable = false)
+    private LocalDateTime detectedAt;
+
+    @Column(name = "snapshot_url", length = 255)
+    private String snapshotUrl;
+
+    @Column(name = "video_url", length = 255)
+    private String videoUrl;
 }

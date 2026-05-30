@@ -1,4 +1,4 @@
-package naranhi.backend.fcm.entity;
+package naranhi.backend.domain.notification.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,13 +11,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import naranhi.backend.domain.member.entity.Member;
+import naranhi.backend.domain.device.entity.Device;
 import naranhi.backend.global.entity.BaseEntity;
 
 @Getter
@@ -25,30 +24,33 @@ import naranhi.backend.global.entity.BaseEntity;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Entity
-@Table(name = "fcm_token")
-public class FcmToken extends BaseEntity {
+@Table(name = "device_notification")
+public class DeviceNotification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "notification_id", nullable = false)
+    private Notification notification;
 
-    @Column(name = "token", nullable = false, length = 500)
-    private String token;
-
-    @Column(name = "device_id", nullable = false, length = 100)
-    private String deviceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", nullable = false)
+    private Device device;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "platform_type", nullable = false, length = 10)
-    private PlatformType platformType;
+    @Column(name = "component_type", nullable = false, length = 10)
+    private ComponentType componentType;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "before_status", nullable = false, length = 10)
+    private ComponentStatus beforeStatus;
 
-    @Column(name = "last_used_at")
-    private LocalDateTime lastUsedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_status", nullable = false, length = 10)
+    private ComponentStatus currentStatus;
+
+    @Column(name = "description", length = 20)
+    private String description;
 }
