@@ -18,25 +18,19 @@ public class FirebaseConfig {
     private String SERVICE_ACCOUNT_PATH;
 
     @Bean
-    public FirebaseApp firebaseApp() {
-        try {
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(
-                            GoogleCredentials.fromStream(new ClassPathResource(SERVICE_ACCOUNT_PATH).getInputStream())
-                    )
-                    .build();
+    public FirebaseMessaging firebaseMessaging() throws IOException {
+        GoogleCredentials credentials = GoogleCredentials
+                .fromStream(new ClassPathResource(SERVICE_ACCOUNT_PATH).getInputStream());
 
-            log.info("Successfully initialized firebase app");
-            return FirebaseApp.initializeApp(options);
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(credentials)
+                .build();
 
-        } catch (IOException exception) {
-            log.error("Fail to initialize firebase app{}", exception.getMessage());
-            throw new IllegalStateException("Firebase 초기화 실패", exception);
-        }
-    }
+        // 이미 초기화된 앱이 있으면 재사용 (재시작 시 중복 초기화 방지)
+        FirebaseApp app = FirebaseApp.getApps().isEmpty()
+                ? FirebaseApp.initializeApp(options)
+                : FirebaseApp.getInstance();
 
-    @Bean
-    public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
-        return FirebaseMessaging.getInstance(firebaseApp);
+        return FirebaseMessaging.getInstance(app);
     }
 }

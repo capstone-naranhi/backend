@@ -1,4 +1,4 @@
-package naranhi.backend.fcm.entity;
+package naranhi.backend.fcm.fcmToken.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,9 +46,37 @@ public class FcmToken extends BaseEntity {
     @Column(name = "platform_type", nullable = false, length = 10)
     private PlatformType platformType;
 
+    @Builder.Default
     @Column(name = "active", nullable = false)
-    private boolean active;
+    private boolean active = true;
 
     @Column(name = "last_used_at")
     private LocalDateTime lastUsedAt;
+
+    public static FcmToken create(
+            Member member,
+            String token,
+            String deviceId,
+            PlatformType platform
+    ) {
+        return FcmToken.builder()
+                .member(member)
+                .token(token)
+                .deviceId(deviceId)
+                .platformType(platform)
+                .active(true)
+                .lastUsedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public void updateToken(String newToken) {
+        this.token = newToken;
+        this.lastUsedAt = LocalDateTime.now();
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
+
 }
