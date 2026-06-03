@@ -9,3 +9,9 @@ spring:
   firebase:
     service-account:
       path: "firebase/service-account.json"
+
+  mqtt:
+    broker-url: ${MQTT_BROKER_URL}
+    client-id: ${MQTT_CLIENT_ID}
+    username: ${MQTT_USERNAME}
+    password: ${MQTT_PASSWORD}
