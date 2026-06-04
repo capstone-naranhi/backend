@@ -2,16 +2,16 @@ package naranhi.backend.domain.device.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import naranhi.backend.domain.device.document.DeviceStatusChangeLog;
 import naranhi.backend.domain.device.dto.DeviceResponse;
 import naranhi.backend.domain.device.entity.Device;
 import naranhi.backend.domain.device.repository.DeviceRepository;
 import naranhi.backend.domain.device.repository.MemberDeviceRepository;
 import naranhi.backend.domain.device.repository.mongo.DeviceStatusChangeLogRepository;
-import naranhi.backend.global.exception.CustomException;
-import naranhi.backend.global.exception.ErrorCode;
 import naranhi.backend.domain.safety.entity.SafetyEvent;
 import naranhi.backend.domain.safety.repository.SafetyEventRepository;
+import naranhi.backend.global.exception.CustomException;
+import naranhi.backend.global.exception.ErrorCode;
+import naranhi.backend.log.document.DeviceStatusLog;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +34,7 @@ public class DeviceService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-        List<DeviceStatusChangeLog> logs = deviceStatusChangeLogRepository
+        List<DeviceStatusLog> logs = deviceStatusChangeLogRepository
                 .findTop3ByDeviceId(deviceId, Sort.by(Sort.Direction.DESC, "changedAt"));
 
         return DeviceResponse.DeviceDetail.of(device, logs);

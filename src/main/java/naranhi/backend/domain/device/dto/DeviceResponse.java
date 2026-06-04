@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
-import naranhi.backend.domain.device.document.DeviceStatusChangeLog;
 import naranhi.backend.domain.device.entity.Device;
 import naranhi.backend.domain.device.entity.DeviceStatus;
 import naranhi.backend.domain.notification.entity.ComponentStatus;
@@ -12,6 +11,7 @@ import naranhi.backend.domain.notification.entity.ComponentType;
 import naranhi.backend.domain.safety.entity.EventType;
 import naranhi.backend.domain.safety.entity.SafetyEvent;
 import naranhi.backend.domain.safety.entity.Severity;
+import naranhi.backend.log.document.DeviceStatusLog;
 
 public class DeviceResponse {
 
@@ -68,7 +68,7 @@ public class DeviceResponse {
             @Schema(description = "장치 컴포넌트 상태 변경 로그 (최근 20건, changedAt 내림차순)")
             List<StatusChangeLog> statusChangeLogs
     ) {
-        public static DeviceDetail of(Device device, List<DeviceStatusChangeLog> logs) {
+        public static DeviceDetail of(Device device, List<DeviceStatusLog> logs) {
             return new DeviceDetail(
                     device.getId(),
                     device.getDeviceName(),
@@ -89,7 +89,7 @@ public class DeviceResponse {
             ComponentStatus currentStatus,
             LocalDateTime changedAt
     ) {
-        public static StatusChangeLog from(DeviceStatusChangeLog log) {
+        public static StatusChangeLog from(DeviceStatusLog log) {
             return new StatusChangeLog(
                     log.getComponentType(),
                     log.getBeforeStatus(),

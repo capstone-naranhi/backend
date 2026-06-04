@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import naranhi.backend.domain.notification.entity.ComponentStatus;
+import naranhi.backend.domain.notification.entity.ComponentType;
 import naranhi.backend.global.entity.BaseEntity;
 
 @Getter
@@ -57,4 +59,29 @@ public class Device extends BaseEntity {
 
     @Column(name = "last_event_at")
     private LocalDateTime lastEventAt;
+
+    // 하트비트 수신 시
+    public void updateHeartbeat(LocalDateTime at) {
+        this.lastHeartbeatAt = at;
+        this.boardStatus = DeviceStatus.ONLINE;
+    }
+
+    // 컴포넌트 상태 변경 시
+    public void updateComponentStatus(ComponentType componentType, ComponentStatus status) {
+        DeviceStatus deviceStatus = status == ComponentStatus.ONLINE
+                ? DeviceStatus.ONLINE
+                : DeviceStatus.OFFLINE;
+
+        switch (componentType) {
+            case CAMERA -> this.cameraStatus = deviceStatus;
+            case MIC -> this.micStatus = deviceStatus;
+            case BOARD -> this.boardStatus = deviceStatus;
+        }
+    }
+
+    // 이벤트 수신 시
+    public void updateLastEventAt(LocalDateTime at) {
+        this.lastEventAt = at;
+    }
+
 }

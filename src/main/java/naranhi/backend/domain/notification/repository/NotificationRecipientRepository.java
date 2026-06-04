@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface NotificationRecipientRepository extends JpaRepository<NotificationRecipient, Long> {
+    List<NotificationRecipient> findByNotificationId(Long notificationId);
 
     @Query("""
             SELECT nr FROM NotificationRecipient nr

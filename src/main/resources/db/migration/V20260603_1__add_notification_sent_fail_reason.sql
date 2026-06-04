@@ -1,0 +1,3 @@
+ALTER TABLE notification_recipient
+ADD COLUMN sent_fail_reason VARCHAR(50) NULL COMMENT 'FCM 전송 실패 사유 (UNREGISTERED|INVALID_TOKEN|INTERNAL_ERROR 등)'
+AFTER sent_at;

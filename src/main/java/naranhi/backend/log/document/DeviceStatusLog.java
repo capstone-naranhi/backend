@@ -1,4 +1,4 @@
-package naranhi.backend.domain.device.document;
+package naranhi.backend.log.document;
 
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -17,11 +17,13 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-@Document(collection = "device_status_change_log")
-public class DeviceStatusChangeLog {
-
+@Document(collection = "device_status_log")
+public class DeviceStatusLog {
     @Id
     private String id;
+
+    @Field("device_serial_number")
+    private String deviceSerialNumber;
 
     @Indexed
     @Field("device_id")

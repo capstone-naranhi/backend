@@ -50,8 +50,21 @@ public class NotificationRecipient extends BaseEntity {
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
 
+    @Column(name = "sent_fail_reason", length = 50)
+    private String sentFailReason;
+
     public void markAsRead() {
         this.isRead = true;
         this.readAt = LocalDateTime.now();
+    }
+
+    public void markFcmSent() {
+        this.isSent = true;
+        this.sentAt = LocalDateTime.now();
+    }
+
+    public void markFcmFailed(String reason) {
+        this.isSent = false;
+        this.sentFailReason = reason;
     }
 }

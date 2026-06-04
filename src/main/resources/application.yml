@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${SPRING_PROFILTES_ACTIVE:local}
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
   flyway:
     enabled: true
