@@ -18,6 +18,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
+            mkdir -p ~/backend/src/main/resources/firebase
+            cat > ~/backend/src/main/resources/firebase/service-account.json << 'FIREBASE_EOF'
+            ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+            FIREBASE_EOF
             cd ~/backend
             echo "=== 1. 코드 pull ==="
             git fetch origin
