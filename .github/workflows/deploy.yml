@@ -19,20 +19,15 @@ jobs:
           script: |
             set -e
             cd ~/backend
-
             echo "=== 1. 코드 pull ==="
-            git pull origin main
-
+            git fetch origin
+            git reset --hard origin/main
             echo "=== 2. JAR 빌드 ==="
             ./gradlew clean build -x test
-
             echo "=== 3. Docker 이미지 빌드 ==="
             docker build -t naranhi-app:latest .
-
-            echo "=== 4. app만 재시작 (MongoDB·Redis 데이터 유지) ==="
-            docker compose -f docker-compose.prod.yml up -d --no-deps --build app
-
-            echo "=== 5. 오래된 이미지 정리 ==="
+            echo "=== 4. app만 재시작 ==="
+            docker-compose -f docker-compose.prod.yml up -d --no-deps app
+            echo "=== 5. 이미지 정리 ==="
             docker image prune -f
-
             echo "=== 배포 완료 ==="
