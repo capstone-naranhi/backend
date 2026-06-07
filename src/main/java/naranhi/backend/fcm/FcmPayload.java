@@ -30,9 +30,17 @@ public record FcmPayload(
             case INFO -> "ℹ️";
         };
 
+        String body = switch (eventType) {
+            case PRONE_SUFFOCATION, BLANKET_SUFFOCATION -> deviceName + "에서 감지됐어요. 지금 바로 확인해주세요.";
+            case FALL -> deviceName + "에서 감지됐어요. 아이가 다치지 않았는지 확인해주세요.";
+            case CLIMBING -> deviceName + "에서 감지됐어요. 아이가 난간을 오르고 있어요.";
+            case CRYING -> deviceName + "에서 울음소리가 감지됐어요.";
+            case EXIT -> deviceName + "에서 아이가 침대를 벗어났어요.";
+        };
+
         return new FcmPayload(
-                emoji + " " + eventType.getDescription(),
-                deviceName + " 카메라에서 감지되었습니다.",
+                emoji + " [" + deviceName + "] " + eventType.getDescription(),
+                body,
                 Map.of(
                         "type", NotificationType.SAFETY.name(),
                         "notifId", String.valueOf(notifId),
@@ -54,9 +62,16 @@ public record FcmPayload(
 
         boolean isOffline = "OFFLINE".equals(currentStatus) || "ERROR".equals(currentStatus);
 
+        String component = switch (componentType) {
+            case "CAMERA" -> "카메라";
+            case "MIC" -> "마이크";
+            case "BOARD" -> "보드";
+            default -> componentType;
+        };
+
         return new FcmPayload(
-                deviceName + " " + (isOffline ? "연결 끊김" : "연결됨"),
-                componentType + " · " + beforeStatus + " → " + currentStatus,
+                "[" + deviceName + "] " + (isOffline ? "연결 끊김" : "연결됨"),
+                component + " · " + beforeStatus + " → " + currentStatus,
                 Map.of(
                         "type", NotificationType.DEVICE.name(),
                         "notifId", String.valueOf(notifId),
