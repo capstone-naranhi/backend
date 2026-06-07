@@ -5,10 +5,10 @@
 -- ── member ──────────────────────────────────────────────────
 INSERT INTO member (name, nickname, email, phone_number, password, role, img_url, created_at, updated_at)
 VALUES ('김지민', '지민맘', 'jimin@naranhi.com', '010-1234-5678',
-        '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'USER', NULL,
+        '$2a$10$Jos5wkECjNyopEIvu6u7G.qAo9nDpv/T1eM.654L4ZSQV1/40erni', 'USER', NULL,
         NOW(6), NOW(6)),
        ('이수현', '수현아빠', 'suhyun@naranhi.com', '010-9876-5432',
-        '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'USER', NULL,
+        '$2a$10$Jos5wkECjNyopEIvu6u7G.qAo9nDpv/T1eM.654L4ZSQV1/40erni', 'USER', NULL,
         NOW(6), NOW(6));
 -- 비밀번호 평문: password
 
