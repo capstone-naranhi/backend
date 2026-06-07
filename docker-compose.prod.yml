@@ -44,6 +44,8 @@ services:
       retries: 5
       start_period: 60s
     restart: always    # ← 자동 재시작
+    ports:
+      - "3306:3306"
 
   mongodb:
     image: mongo:7.0
