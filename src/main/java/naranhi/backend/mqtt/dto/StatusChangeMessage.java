@@ -1,26 +1,29 @@
 package naranhi.backend.mqtt.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.OffsetDateTime;
 
 /**
  * Jetson → 서버 토픽: devices/{device_serial}/status/change
- * <p>
- * component_type: BOARD | CAMERA | MIC  (ComponentType enum) before_status:  ONLINE | OFFLINE | ERROR  (ComponentStatus
- * enum) current_status: ONLINE | OFFLINE | ERROR  (ComponentStatus enum)
+ *
+ * <pre>
+ * {
+ *   "deviceSerial":    "JETSON-001",
+ *   "componentType":   "CAMERA" | "MIC" | "BOARD" | "INFERENCE_MODULE",
+ *   "previousStatus":  "ONLINE" | "OFFLINE" | "ERROR",
+ *   "currentStatus":   "ONLINE" | "OFFLINE" | "ERROR",
+ *   "reason":          "heartbeat status change",
+ *   "timestamp":       "2026-06-09T10:00:00+00:00"
+ * }
+ * </pre>
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record StatusChangeMessage(
-        @JsonProperty("device_serial_number")
-        String deviceSerialNumber,
-
-        @JsonProperty("component_type")
-        String componentType,   // ComponentType enum name
-
-        @JsonProperty("before_status")
-        String beforeStatus,    // ComponentStatus enum name
-
-        @JsonProperty("current_status")
-        String currentStatus,   // ComponentStatus enum name
-
-        String description
+        String deviceSerial,
+        String componentType,
+        String previousStatus,
+        String currentStatus,
+        String reason,
+        OffsetDateTime timestamp
 ) {
 }

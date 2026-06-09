@@ -1,30 +1,31 @@
 package naranhi.backend.mqtt.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.OffsetDateTime;
 
 /**
  * Jetson → 서버 토픽: devices/{device_serial}/heartbeat
+ *
+ * <pre>
+ * {
+ *   "deviceSerial":   "JETSON-001",
+ *   "jetsonStatus":   "ONLINE",
+ *   "cameraStatus":   "ONLINE" | "OFFLINE" | "UNKNOWN" | "ERROR",
+ *   "micStatus":      "ONLINE" | "OFFLINE" | "ERROR",
+ *   "cpuUsage":       12.5,
+ *   "memoryUsage":    34.2,
+ *   "timestamp":      "2026-06-09T10:00:00+00:00"
+ * }
+ * </pre>
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record HeartbeatMessage(
-        @JsonProperty("device_serial_number")
-        String deviceSerialNumber,
-
-        @JsonProperty("board_status")
-        String boardStatus,
-
-        @JsonProperty("camera_status")
+        String deviceSerial,
+        String jetsonStatus,
         String cameraStatus,
-
-        @JsonProperty("mic_status")
         String micStatus,
-
-        @JsonProperty("cpu_usage")
-        Integer cpuUsage,
-
-        @JsonProperty("memory_usage")
-        Integer memoryUsage,
-
-        LocalDateTime timestamp
+        Double cpuUsage,
+        Double memoryUsage,
+        OffsetDateTime timestamp
 ) {
 }

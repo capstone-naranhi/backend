@@ -27,24 +27,24 @@ public class HeartbeatProcessor {
 
     @Transactional
     public void updateMysql(HeartbeatMessage message) {
-        deviceRepository.findByDeviceSerialNumber(message.deviceSerialNumber())
+        deviceRepository.findByDeviceSerialNumber(message.deviceSerial())
                 .ifPresentOrElse(
                         device -> {
-                            device.updateHeartbeat(
-                                    message.timestamp() != null
-                                            ? message.timestamp()
-                                            : LocalDateTime.now()
-                            );
+                            LocalDateTime heartbeatAt = message.timestamp() != null
+                                    ? message.timestamp().toLocalDateTime()
+                                    : LocalDateTime.now();
+                            device.updateHeartbeat(heartbeatAt);
                             deviceRepository.save(device);
-                            log.debug("하트비트 업데이트 - deviceSerialNumber: {}", message.deviceSerialNumber());
+                            log.debug("하트비트 업데이트 - serial: {}, cpu: {}%, mem: {}%",
+                                    message.deviceSerial(), message.cpuUsage(), message.memoryUsage());
                         },
-                        () -> saveAsPending(message.deviceSerialNumber())
+                        () -> saveAsPending(message.deviceSerial())
                 );
     }
 
-    private void saveAsPending(String deviceSerialNumber) {
-        String key = PENDING_KEY_PREFIX + deviceSerialNumber;
-        redisTemplate.opsForValue().set(key, deviceSerialNumber, PENDING_TTL);
-        log.info("미등록 장치 Redis 임시 저장 (10분) - deviceSerialNumber: {}", deviceSerialNumber);
+    private void saveAsPending(String deviceSerial) {
+        String key = PENDING_KEY_PREFIX + deviceSerial;
+        redisTemplate.opsForValue().set(key, deviceSerial, PENDING_TTL);
+        log.info("미등록 장치 Redis 임시 저장 (10분) - serial: {}", deviceSerial);
     }
 }

@@ -1,32 +1,41 @@
 package naranhi.backend.mqtt.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.OffsetDateTime;
 
 /**
  * Jetson → 서버 토픽: devices/{device_serial}/events/danger
- * <p>
- * severity는 EventType.getDefaultSeverity()로 서버에서 결정 MQTT 메시지에 severity 포함 필요 없음
+ *
+ * <pre>
+ * {
+ *   "deviceSerial": "JETSON-001",
+ *   "eventType":    "FALL" | "CLIMBING" | ...,
+ *   "severity":     "DANGER" | "CAUTION" | "INFO",
+ *   "confidence":   0.92,
+ *   "duration":     5,
+ *   "detectedAt":   "2026-06-09T10:00:00+00:00",
+ *   "snapshotUrl":  null | "",
+ *   "videoUrl":     null | "",
+ *   "phase":        "START" | "END"   (선택),
+ *   "startedAt":    "..."             (선택),
+ *   "endedAt":      "..."             (선택, END phase 시)
+ * }
+ * </pre>
+ *
+ * severity는 서버에서 EventType.getDefaultSeverity()로 결정하므로 수신 값은 참고용.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record DangerEventMessage(
-        @JsonProperty("device_serial_number")
-        String deviceSerialNumber,
-
-        @JsonProperty("event_type")
-        String eventType,          // EventType enum name (ex. "CRYING", "FALL")
-
+        String deviceSerial,
+        String eventType,
+        String severity,
         Double confidence,
-
-        @JsonProperty("duration_second")
-        Integer durationSecond,
-
-        @JsonProperty("snapshot_url")
+        Integer duration,
+        OffsetDateTime detectedAt,
         String snapshotUrl,
-
-        @JsonProperty("video_url")
         String videoUrl,
-
-        @JsonProperty("detected_at")
-        LocalDateTime detectedAt
+        String phase,
+        OffsetDateTime startedAt,
+        OffsetDateTime endedAt
 ) {
 }

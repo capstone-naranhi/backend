@@ -26,21 +26,25 @@ public class MongoLogService {
     @Async
     public void saveDangerEventLog(DangerEventMessage event) {
         try {
+            LocalDateTime detectedAt = event.detectedAt() != null
+                    ? event.detectedAt().toLocalDateTime()
+                    : LocalDateTime.now();
+
             safetyEventLogRepository.save(
                     SafetyEventLog.builder()
-                            .deviceSerialNumber(event.deviceSerialNumber())
+                            .deviceSerialNumber(event.deviceSerial())
                             .eventType(event.eventType())
                             .confidence(event.confidence())
-                            .durationSecond(event.durationSecond())
+                            .durationSecond(event.duration())
                             .snapshotUrl(event.snapshotUrl())
                             .videoUrl(event.videoUrl())
-                            .detectedAt(event.detectedAt())
+                            .detectedAt(detectedAt)
                             .createdAt(LocalDateTime.now())
                             .build()
             );
         } catch (Exception e) {
-            log.error("MongoDB SafetyEventLog 저장 실패 - deviceSerialNumber: {}, error: {}",
-                    event.deviceSerialNumber(), e.getMessage());
+            log.error("MongoDB SafetyEventLog 저장 실패 - serial: {}, error: {}",
+                    event.deviceSerial(), e.getMessage());
         }
     }
 
@@ -48,23 +52,23 @@ public class MongoLogService {
     public void saveDeviceStatusLog(StatusChangeMessage status, Device device) {
         try {
             ComponentType componentType = ComponentType.valueOf(status.componentType());
-            ComponentStatus beforeStatus = ComponentStatus.valueOf(status.beforeStatus());
+            ComponentStatus previousStatus = ComponentStatus.valueOf(status.previousStatus());
             ComponentStatus currentStatus = ComponentStatus.valueOf(status.currentStatus());
 
             deviceStatusChangeLogRepository.save(
                     DeviceStatusLog.builder()
-                            .deviceSerialNumber(status.deviceSerialNumber())
+                            .deviceSerialNumber(status.deviceSerial())
                             .deviceId(device.getId())
                             .componentType(componentType)
-                            .beforeStatus(beforeStatus)
+                            .beforeStatus(previousStatus)
                             .currentStatus(currentStatus)
-                            .reason(status.description())
+                            .reason(status.reason())
                             .changedAt(LocalDateTime.now())
                             .build()
             );
         } catch (Exception e) {
-            log.error("MongoDB DeviceStatusLog 저장 실패 - deviceSerialNumber: {}, error: {}",
-                    status.deviceSerialNumber(), e.getMessage());
+            log.error("MongoDB DeviceStatusLog 저장 실패 - serial: {}, error: {}",
+                    status.deviceSerial(), e.getMessage());
         }
     }
 }

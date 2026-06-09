@@ -37,46 +37,44 @@ public class StatusChangeProcessor {
     private final MongoLogService mongoLogService;
 
     public void process(StatusChangeMessage message) {
-        Device device = deviceRepository.findByDeviceSerialNumber(message.deviceSerialNumber())
-                .orElseThrow(() -> new IllegalArgumentException("미등록 장치: " + message.deviceSerialNumber()));
+        Device device = deviceRepository.findByDeviceSerialNumber(message.deviceSerial())
+                .orElseThrow(() -> new IllegalArgumentException("미등록 장치: " + message.deviceSerial()));
 
-        List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerialNumber());
+        List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerial());
         if (memberIds.isEmpty()) {
-            log.warn("연결된 회원 없음 - deviceSerialNumber: {}", message.deviceSerialNumber());
+            log.warn("연결된 회원 없음 - serial: {}", message.deviceSerial());
             return;
         }
 
-        // ComponentType, ComponentStatus 파싱
         ComponentType componentType;
-        ComponentStatus beforeStatus;
+        ComponentStatus previousStatus;
         ComponentStatus currentStatus;
         try {
             componentType = ComponentType.valueOf(message.componentType());
-            beforeStatus = ComponentStatus.valueOf(message.beforeStatus());
+            previousStatus = ComponentStatus.valueOf(message.previousStatus());
             currentStatus = ComponentStatus.valueOf(message.currentStatus());
         } catch (IllegalArgumentException e) {
-            log.error("알 수 없는 ComponentType/Status - {}", message);
+            log.error("알 수 없는 ComponentType/Status - serial: {}, component: {}, {} → {}",
+                    message.deviceSerial(), message.componentType(),
+                    message.previousStatus(), message.currentStatus());
             return;
         }
 
-        // MySQL 트랜잭션
-        Long notifId = saveMysql(message, device, memberIds, componentType, beforeStatus, currentStatus);
+        Long notifId = saveMysql(message, device, memberIds, componentType, previousStatus, currentStatus);
 
-        // FCM 전송
         FcmPayload payload = FcmPayload.ofDevice(
                 device.getDeviceName(),
                 message.componentType(),
-                message.beforeStatus(),
+                message.previousStatus(),
                 message.currentStatus(),
                 notifId
         );
         fcmService.sendToMembers(memberIds, payload, NotificationType.DEVICE);
 
-        // MongoDB 비동기
         mongoLogService.saveDeviceStatusLog(message, device);
 
-        log.info("상태 변경 처리 완료 - deviceSerialNumber: {}, {} {} → {}",
-                message.deviceSerialNumber(), componentType, beforeStatus, currentStatus);
+        log.info("상태 변경 처리 완료 - serial: {}, {} {} → {}",
+                message.deviceSerial(), componentType, previousStatus, currentStatus);
     }
 
     @Transactional
@@ -85,15 +83,12 @@ public class StatusChangeProcessor {
             Device device,
             List<Long> memberIds,
             ComponentType componentType,
-            ComponentStatus beforeStatus,
+            ComponentStatus previousStatus,
             ComponentStatus currentStatus
     ) {
-
-        // ① Device 컴포넌트 상태 UPDATE
         device.updateComponentStatus(componentType, currentStatus);
         deviceRepository.save(device);
 
-        // ② Notification INSERT
         Notification notification = notificationRepository.save(
                 Notification.builder()
                         .type(NotificationType.DEVICE)
@@ -101,19 +96,17 @@ public class StatusChangeProcessor {
                         .build()
         );
 
-        // ③ DeviceNotification INSERT
         deviceNotificationRepository.save(
                 DeviceNotification.builder()
                         .notification(notification)
                         .device(device)
                         .componentType(componentType)
-                        .beforeStatus(beforeStatus)
+                        .beforeStatus(previousStatus)
                         .currentStatus(currentStatus)
-                        .description(message.description())
+                        .description(message.reason())
                         .build()
         );
 
-        // ④ NotificationRecipient INSERT
         List<Member> members = memberRepository.findAllById(memberIds);
         notificationRecipientRepository.saveAll(
                 members.stream()

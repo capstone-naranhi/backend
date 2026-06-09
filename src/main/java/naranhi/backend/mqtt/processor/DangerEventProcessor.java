@@ -42,33 +42,28 @@ public class DangerEventProcessor {
     private final MongoLogService mongoLogService;
 
     public void process(DangerEventMessage message) {
-        // 1. serial로 장치 조회
-        Device device = deviceRepository.findByDeviceSerialNumber(message.deviceSerialNumber())
+        Device device = deviceRepository.findByDeviceSerialNumber(message.deviceSerial())
                 .orElseThrow(() -> {
-                    log.warn("미등록 장치 - deviceSerialNumber: {}", message.deviceSerialNumber());
-                    return new IllegalArgumentException("미등록 장치: " + message.deviceSerialNumber());
+                    log.warn("미등록 장치 위험 이벤트 - serial: {}", message.deviceSerial());
+                    return new IllegalArgumentException("미등록 장치: " + message.deviceSerial());
                 });
 
-        // 2. 연결된 회원 ID 목록 조회
-        List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerialNumber());
+        List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerial());
         if (memberIds.isEmpty()) {
-            log.warn("연결된 회원 없음 - deviceSerialNumber: {}", message.deviceSerialNumber());
+            log.warn("연결된 회원 없음 - serial: {}", message.deviceSerial());
             return;
         }
 
-        // 3. EventType 파싱 (MQTT 문자열 → enum)
         EventType eventType;
         try {
             eventType = EventType.valueOf(message.eventType());
         } catch (IllegalArgumentException e) {
-            log.error("알 수 없는 EventType - {}", message.eventType());
+            log.error("알 수 없는 EventType - serial: {}, eventType: {}", message.deviceSerial(), message.eventType());
             return;
         }
 
-        // 4. MySQL 트랜잭션
         Long notifId = saveMysql(message, device, memberIds, eventType);
 
-        // 5. FCM 전송 (MySQL 커밋 후)
         FcmPayload payload = FcmPayload.ofSafety(
                 eventType,
                 device.getDeviceName(),
@@ -76,16 +71,12 @@ public class DangerEventProcessor {
         );
         fcmService.sendToMembers(memberIds, payload, NotificationType.SAFETY);
 
-        // 6. MongoDB 비동기 로그
         mongoLogService.saveDangerEventLog(message);
 
-        log.info("위험 감지 처리 완료 - deviceSerialNumber: {}, eventType: {}, notifId: {}, 수신자: {}명",
-                message.deviceSerialNumber(), eventType, notifId, memberIds.size());
+        log.info("위험 감지 처리 완료 - serial: {}, eventType: {}, phase: {}, notifId: {}, 수신자: {}명",
+                message.deviceSerial(), eventType, message.phase(), notifId, memberIds.size());
     }
 
-    /**
-     * MySQL 트랜잭션 SafetyEvent → Notification → SafetyNotification → NotificationRecipient(N건)
-     */
     @Transactional
     public Long saveMysql(
             DangerEventMessage message,
@@ -93,8 +84,10 @@ public class DangerEventProcessor {
             List<Long> memberIds,
             EventType eventType
     ) {
+        LocalDateTime detectedAt = message.detectedAt() != null
+                ? message.detectedAt().toLocalDateTime()
+                : LocalDateTime.now();
 
-        // ① SafetyEvent INSERT
         SafetyEvent safetyEvent = safetyEventRepository.save(
                 SafetyEvent.builder()
                         .device(device)
@@ -103,20 +96,16 @@ public class DangerEventProcessor {
                         .confidence(message.confidence() != null
                                 ? BigDecimal.valueOf(message.confidence())
                                 : null)
-                        .durationSecond(message.durationSecond())
+                        .durationSecond(message.duration())
                         .snapshotUrl(message.snapshotUrl())
                         .videoUrl(message.videoUrl())
-                        .detectedAt(message.detectedAt() != null
-                                ? message.detectedAt()
-                                : LocalDateTime.now())
+                        .detectedAt(detectedAt)
                         .build()
         );
 
-        // 장치 마지막 이벤트 시각 업데이트
         device.updateLastEventAt(LocalDateTime.now());
         deviceRepository.save(device);
 
-        // ② Notification INSERT
         Notification notification = notificationRepository.save(
                 Notification.builder()
                         .type(NotificationType.SAFETY)
@@ -124,7 +113,6 @@ public class DangerEventProcessor {
                         .build()
         );
 
-        // ③ SafetyNotification INSERT
         safetyNotificationRepository.save(
                 SafetyNotification.builder()
                         .notification(notification)
@@ -135,7 +123,6 @@ public class DangerEventProcessor {
                         .build()
         );
 
-        // ④ NotificationRecipient INSERT (회원수만큼)
         List<Member> members = memberRepository.findAllById(memberIds);
         notificationRecipientRepository.saveAll(
                 members.stream()
