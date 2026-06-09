@@ -68,10 +68,10 @@ public class MqttConfig {
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(
-                2,  // danger       - 정확히 1번
+                1,  // danger       - QoS 1 (spec)
                 1,  // status/change
-                1,  // heartbeat
-                0   // signaling    - 실시간성 중요, 재전송 불필요
+                0,  // heartbeat    - QoS 0 (spec, 20초 주기라 유실 허용)
+                1   // signaling    - QoS 1 (spec)
         );
         adapter.setOutputChannel(mqttInputChannel());
         return adapter;

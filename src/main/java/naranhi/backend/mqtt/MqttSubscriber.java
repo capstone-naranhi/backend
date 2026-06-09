@@ -31,34 +31,39 @@ public class MqttSubscriber {
         String topic = (String) message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC);
         String payload = (String) message.getPayload();
 
-        log.debug("MQTT 수신 - topic: {}", topic);
+        log.info("[MQTT] 수신 ← {}", topic);
+        log.debug("[MQTT] payload: {}", payload);
 
         try {
-            // devices/{serial}/events/danger
             if (topic.contains("events/danger")) {
-                DangerEventMessage event =
-                        objectMapper.readValue(payload, DangerEventMessage.class);
+                DangerEventMessage event = objectMapper.readValue(payload, DangerEventMessage.class);
+                log.info("[MQTT] 위험 이벤트 - serial: {}, type: {}, severity: {}, phase: {}",
+                        event.deviceSerial(), event.eventType(), event.severity(), event.phase());
                 dangerEventProcessor.process(event);
 
-                // devices/{serial}/status/change
             } else if (topic.contains("status/change")) {
-                StatusChangeMessage status =
-                        objectMapper.readValue(payload, StatusChangeMessage.class);
+                StatusChangeMessage status = objectMapper.readValue(payload, StatusChangeMessage.class);
+                log.info("[MQTT] 상태 변경 - serial: {}, component: {}, {} → {}",
+                        status.deviceSerial(), status.componentType(),
+                        status.previousStatus(), status.currentStatus());
                 statusChangeProcessor.process(status);
 
-                // devices/{serial}/heartbeat
             } else if (topic.contains("heartbeat")) {
-                HeartbeatMessage hb =
-                        objectMapper.readValue(payload, HeartbeatMessage.class);
+                HeartbeatMessage hb = objectMapper.readValue(payload, HeartbeatMessage.class);
+                log.debug("[MQTT] 하트비트 - serial: {}, jetson: {}, camera: {}, mic: {}",
+                        hb.deviceSerial(), hb.jetsonStatus(), hb.cameraStatus(), hb.micStatus());
                 heartbeatProcessor.process(hb);
 
-                // devices/{serial}/signaling/server/{session_id}
             } else if (topic.contains("signaling/server")) {
+                log.debug("[MQTT] 시그널링 relay ← {}", topic);
                 signalingHandler.handle(topic, payload);
+
+            } else {
+                log.warn("[MQTT] 처리되지 않은 토픽 - {}", topic);
             }
 
         } catch (Exception e) {
-            log.error("MQTT 처리 실패 - topic: {}, error: {}", topic, e.getMessage(), e);
+            log.error("[MQTT] 처리 실패 - topic: {}, error: {}", topic, e.getMessage(), e);
         }
     }
 }
