@@ -22,6 +22,7 @@ public enum ErrorCode {
     DEVICE_NOT_FOUND("DEVICE_001", HttpStatus.NOT_FOUND, "존재하지 않는 장치입니다."),
     DEVICE_ALREADY_REGISTERED("DEVICE_002", HttpStatus.CONFLICT, "이미 등록된 장치입니다."),
     DEVICE_ACCESS_DENIED("DEVICE_403", HttpStatus.FORBIDDEN, "해당 디바이스에 접근 권한이 없습니다."),
+    DEVICE_PENDING_NOT_FOUND("DEVICE_004", HttpStatus.NOT_FOUND, "장치의 heartbeat가 수신되지 않았거나 만료되었습니다. 장치 전원을 확인해주세요."),
 
     // 알림
     NOTIFICATION_NOT_FOUND("NOTIF_001", HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),

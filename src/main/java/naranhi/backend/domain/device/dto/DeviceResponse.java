@@ -123,6 +123,22 @@ public class DeviceResponse {
         }
     }
 
+    public record RegisteredDevice(
+            Long deviceId,
+            String deviceName,
+            String deviceSerialNumber,
+            String locationName
+    ) {
+        public static RegisteredDevice from(Device device) {
+            return new RegisteredDevice(
+                    device.getId(),
+                    device.getDeviceName(),
+                    device.getDeviceSerialNumber(),
+                    device.getLocationName()
+            );
+        }
+    }
+
     public record OngoingSafetyEvent(
             Long safetyEventId,
             EventType eventType,

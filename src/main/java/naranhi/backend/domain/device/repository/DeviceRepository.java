@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 public interface DeviceRepository extends JpaRepository<Device, Long> {
     Optional<Device> findByDeviceSerialNumber(String deviceSerialNumber);
 
+    boolean existsByDeviceSerialNumber(String deviceSerialNumber);
+
     @Query("""
                 SELECT md.member.id
                 FROM MemberDevice md
