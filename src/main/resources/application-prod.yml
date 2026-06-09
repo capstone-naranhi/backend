@@ -38,6 +38,6 @@ spring:
 logging:
   level:
     root: WARN
-    naranhi: INFO
+    naranhi: DEBUG
   file:
     name: /var/log/app/application.log # EC2 내 로그 파일 경로
