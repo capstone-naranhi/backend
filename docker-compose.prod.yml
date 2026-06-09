@@ -16,6 +16,8 @@ services:
       MQTT_CLIENT_ID: ${MQTT_CLIENT_ID}
       MQTT_USERNAME: ${MQTT_USERNAME}
       MQTT_PASSWORD: ${MQTT_PASSWORD}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /var/log/app:/var/log/app
     depends_on:
