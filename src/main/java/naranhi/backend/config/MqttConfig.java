@@ -40,26 +40,25 @@ public class MqttConfig {
         options.setUserName(username);
         options.setPassword(password.toCharArray());
         options.setAutomaticReconnect(true);
-        options.setCleanSession(false);      // 연결 끊긴 사이 메시지 유실 방지
+        options.setCleanSession(false);
         options.setKeepAliveInterval(60);
         factory.setConnectionOptions(options);
         return factory;
     }
 
-    // ─── 수신: 어댑터 → MqttSubscriber (Integration Flow로 명시적 배선) ──
+    // ─── 수신: IntegrationFlow 내부에서 어댑터를 직접 생성 ───────
 
     @Bean
-    public MqttPahoMessageDrivenChannelAdapter mqttInboundAdapter() {
+    public IntegrationFlow mqttInboundFlow(MqttSubscriber mqttSubscriber) {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(
                         clientId + "-sub",
                         mqttClientFactory(),
-                        "devices/+/events/danger",    // 위험 감지 이벤트
-                        "devices/+/status/change",    // 장치 상태 변경
-                        "devices/+/heartbeat",        // 하트비트
-                        "devices/+/signaling/server/+" // WebRTC signaling (보드 → 서버)
+                        "devices/+/events/danger",
+                        "devices/+/status/change",
+                        "devices/+/heartbeat",
+                        "devices/+/signaling/server/+"
                 );
-
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(
@@ -68,14 +67,9 @@ public class MqttConfig {
                 0,  // heartbeat     - QoS 0
                 1   // signaling     - QoS 1
         );
-        // 출력 채널은 mqttInboundFlow에서 설정하므로 여기서 지정하지 않음
-        return adapter;
-    }
 
-    @Bean
-    public IntegrationFlow mqttInboundFlow(MqttSubscriber mqttSubscriber) {
         return IntegrationFlow
-                .from(mqttInboundAdapter())
+                .from(adapter)
                 .handle(mqttSubscriber, "handleMessage")
                 .get();
     }
@@ -95,7 +89,7 @@ public class MqttConfig {
                 mqttClientFactory()
         );
         handler.setAsync(true);
-        handler.setDefaultQos(0); // signaling은 QoS 0
+        handler.setDefaultQos(0);
         return handler;
     }
 }
