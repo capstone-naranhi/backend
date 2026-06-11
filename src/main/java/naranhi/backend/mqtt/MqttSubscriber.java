@@ -12,12 +12,14 @@ import naranhi.backend.mqtt.processor.HeartbeatProcessor;
 import naranhi.backend.mqtt.processor.StatusChangeProcessor;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MqttSubscriber {
+public class MqttSubscriber implements MessageHandler {
 
     private final DangerEventProcessor dangerEventProcessor;
     private final StatusChangeProcessor statusChangeProcessor;
@@ -25,7 +27,8 @@ public class MqttSubscriber {
     private final SignalingHandler signalingHandler;
     private final ObjectMapper objectMapper;
 
-    public void handleMessage(Message<?> message) {
+    @Override
+    public void handleMessage(Message<?> message) throws MessagingException {
         String topic = (String) message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC);
         String payload = (String) message.getPayload();
 

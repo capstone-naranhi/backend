@@ -80,7 +80,7 @@ public class MqttConfig {
     @Bean
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public MessageHandler mqttInboundHandler(MqttSubscriber mqttSubscriber) {
-        return mqttSubscriber::handleMessage;
+        return mqttSubscriber;
     }
 
     // ─── 발신 채널 (서버 → 보드 signaling 용) ────────────────────
