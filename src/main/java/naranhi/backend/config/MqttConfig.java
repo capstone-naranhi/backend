@@ -1,11 +1,13 @@
 package naranhi.backend.config;
 
+import naranhi.backend.mqtt.MqttSubscriber;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
@@ -14,7 +16,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
 @Configuration
-@IntegrationComponentScan
 public class MqttConfig {
 
     @Value("${spring.mqtt.broker-url}")
@@ -45,12 +46,7 @@ public class MqttConfig {
         return factory;
     }
 
-    // ─── 수신 채널 ────────────────────────────────────────────────
-
-    @Bean
-    public MessageChannel mqttInputChannel() {
-        return new DirectChannel();
-    }
+    // ─── 수신: 어댑터 → MqttSubscriber (Integration Flow로 명시적 배선) ──
 
     @Bean
     public MqttPahoMessageDrivenChannelAdapter mqttInboundAdapter() {
@@ -58,7 +54,6 @@ public class MqttConfig {
                 new MqttPahoMessageDrivenChannelAdapter(
                         clientId + "-sub",
                         mqttClientFactory(),
-                        // 구독할 토픽 목록
                         "devices/+/events/danger",    // 위험 감지 이벤트
                         "devices/+/status/change",    // 장치 상태 변경
                         "devices/+/heartbeat",        // 하트비트
@@ -68,13 +63,21 @@ public class MqttConfig {
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(
-                1,  // danger       - QoS 1 (spec)
-                1,  // status/change
-                0,  // heartbeat    - QoS 0 (spec, 20초 주기라 유실 허용)
-                1   // signaling    - QoS 1 (spec)
+                1,  // danger        - QoS 1
+                1,  // status/change - QoS 1
+                0,  // heartbeat     - QoS 0
+                1   // signaling     - QoS 1
         );
-        adapter.setOutputChannel(mqttInputChannel());
+        // 출력 채널은 mqttInboundFlow에서 설정하므로 여기서 지정하지 않음
         return adapter;
+    }
+
+    @Bean
+    public IntegrationFlow mqttInboundFlow(MqttSubscriber mqttSubscriber) {
+        return IntegrationFlow
+                .from(mqttInboundAdapter())
+                .handle(mqttSubscriber, "handleMessage")
+                .get();
     }
 
     // ─── 발신 채널 (서버 → 보드 signaling 용) ────────────────────
@@ -85,6 +88,7 @@ public class MqttConfig {
     }
 
     @Bean
+    @ServiceActivator(inputChannel = "mqttOutputChannel")
     public MessageHandler mqttOutboundHandler() {
         MqttPahoMessageHandler handler = new MqttPahoMessageHandler(
                 clientId + "-pub",

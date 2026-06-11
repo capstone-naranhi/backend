@@ -10,7 +10,6 @@ import naranhi.backend.mqtt.SignalingHandler;
 import naranhi.backend.mqtt.processor.DangerEventProcessor;
 import naranhi.backend.mqtt.processor.HeartbeatProcessor;
 import naranhi.backend.mqtt.processor.StatusChangeProcessor;
-import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,6 @@ public class MqttSubscriber {
     private final SignalingHandler signalingHandler;
     private final ObjectMapper objectMapper;
 
-    @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<?> message) {
         String topic = (String) message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC);
         String payload = (String) message.getPayload();
