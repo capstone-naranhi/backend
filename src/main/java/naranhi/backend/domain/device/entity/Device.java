@@ -61,9 +61,11 @@ public class Device extends BaseEntity {
     private LocalDateTime lastEventAt;
 
     // 하트비트 수신 시
-    public void updateHeartbeat(LocalDateTime at) {
+    public void updateHeartbeat(LocalDateTime at, DeviceStatus cameraStatus, DeviceStatus micStatus) {
         this.lastHeartbeatAt = at;
         this.boardStatus = DeviceStatus.ONLINE;
+        this.cameraStatus = cameraStatus;
+        this.micStatus = micStatus;
     }
 
     // 컴포넌트 상태 변경 시

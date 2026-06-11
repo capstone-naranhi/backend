@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import naranhi.backend.domain.device.entity.DeviceStatus;
 import naranhi.backend.domain.device.repository.DeviceRepository;
 import naranhi.backend.mqtt.dto.HeartbeatMessage;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -33,7 +34,11 @@ public class HeartbeatProcessor {
                             LocalDateTime heartbeatAt = message.timestamp() != null
                                     ? message.timestamp().toLocalDateTime()
                                     : LocalDateTime.now();
-                            device.updateHeartbeat(heartbeatAt);
+                            DeviceStatus cameraStatus = "ONLINE".equals(message.cameraStatus())
+                                    ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
+                            DeviceStatus micStatus = "ONLINE".equals(message.micStatus())
+                                    ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
+                            device.updateHeartbeat(heartbeatAt, cameraStatus, micStatus);
                             deviceRepository.save(device);
                             log.debug("하트비트 업데이트 - serial: {}, cpu: {}%, mem: {}%",
                                     message.deviceSerial(), message.cpuUsage(), message.memoryUsage());
