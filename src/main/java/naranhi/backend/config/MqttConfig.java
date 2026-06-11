@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
@@ -46,10 +45,15 @@ public class MqttConfig {
         return factory;
     }
 
-    // ─── 수신: IntegrationFlow 내부에서 어댑터를 직접 생성 ───────
+    // ─── 수신 채널 ────────────────────────────────────────────────
 
     @Bean
-    public IntegrationFlow mqttInboundFlow(MqttSubscriber mqttSubscriber) {
+    public MessageChannel mqttInputChannel() {
+        return new DirectChannel();
+    }
+
+    @Bean
+    public MqttPahoMessageDrivenChannelAdapter mqttInboundAdapter() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(
                         clientId + "-sub",
@@ -67,11 +71,16 @@ public class MqttConfig {
                 0,  // heartbeat     - QoS 0
                 1   // signaling     - QoS 1
         );
+        adapter.setOutputChannel(mqttInputChannel());
+        return adapter;
+    }
 
-        return IntegrationFlow
-                .from(adapter)
-                .handle(mqttSubscriber, "handleMessage")
-                .get();
+    // @Bean + @ServiceActivator를 같은 설정 클래스에 선언해야
+    // 채널 이름 불일치 없이 안전하게 구독자가 등록됩니다.
+    @Bean
+    @ServiceActivator(inputChannel = "mqttInputChannel")
+    public MessageHandler mqttInboundHandler(MqttSubscriber mqttSubscriber) {
+        return mqttSubscriber::handleMessage;
     }
 
     // ─── 발신 채널 (서버 → 보드 signaling 용) ────────────────────
