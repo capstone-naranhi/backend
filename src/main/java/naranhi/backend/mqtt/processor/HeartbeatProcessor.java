@@ -38,7 +38,8 @@ public class HeartbeatProcessor {
                                     ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
                             DeviceStatus micStatus = "ONLINE".equals(message.micStatus())
                                     ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
-                            device.updateHeartbeat(heartbeatAt, cameraStatus, micStatus);
+                            device.updateHeartbeat(heartbeatAt, cameraStatus, micStatus,
+                                    message.cpuUsage(), message.memoryUsage());
                             deviceRepository.save(device);
                             log.debug("하트비트 업데이트 - serial: {}, cpu: {}%, mem: {}%",
                                     message.deviceSerial(), message.cpuUsage(), message.memoryUsage());

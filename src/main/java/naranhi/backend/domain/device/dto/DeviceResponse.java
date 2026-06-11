@@ -34,7 +34,11 @@ public class DeviceResponse {
             DeviceStatus cameraStatus,
             DeviceStatus micStatus,
             @Schema(description = "마지막 하트비트로부터 60초 이내면 ONLINE, 그렇지 않으면 OFFLINE")
-            DeviceStatus heartbeatStatus
+            DeviceStatus heartbeatStatus,
+            @Schema(description = "CPU 사용률 (%)")
+            @Nullable Double cpuUsage,
+            @Schema(description = "메모리 사용률 (%)")
+            @Nullable Double memoryUsage
     ) {
         public static DeviceInfo from(Device device) {
             return new DeviceInfo(
@@ -44,7 +48,9 @@ public class DeviceResponse {
                     device.getBoardStatus(),
                     device.getCameraStatus(),
                     device.getMicStatus(),
-                    resolveHeartbeatStatus(device.getLastHeartbeatAt())
+                    resolveHeartbeatStatus(device.getLastHeartbeatAt()),
+                    device.getCpuUsage(),
+                    device.getMemoryUsage()
             );
         }
     }
@@ -65,6 +71,10 @@ public class DeviceResponse {
             DeviceStatus micStatus,
             @Schema(description = "마지막 하트비트로부터 60초 이내면 ONLINE, 그렇지 않으면 OFFLINE")
             DeviceStatus heartbeatStatus,
+            @Schema(description = "CPU 사용률 (%)")
+            @Nullable Double cpuUsage,
+            @Schema(description = "메모리 사용률 (%)")
+            @Nullable Double memoryUsage,
             @Schema(description = "장치 컴포넌트 상태 변경 로그 (최근 20건, changedAt 내림차순)")
             List<StatusChangeLog> statusChangeLogs
     ) {
@@ -78,6 +88,8 @@ public class DeviceResponse {
                     device.getCameraStatus(),
                     device.getMicStatus(),
                     resolveHeartbeatStatus(device.getLastHeartbeatAt()),
+                    device.getCpuUsage(),
+                    device.getMemoryUsage(),
                     logs.stream().map(StatusChangeLog::from).toList()
             );
         }
@@ -107,6 +119,10 @@ public class DeviceResponse {
             DeviceStatus micStatus,
             @Schema(description = "실시간 스트리밍 상태, 마지막 하트비트로부터 60초 이내면 ONLINE, 그렇지 않으면 OFFLINE")
             DeviceStatus heartbeatStatus,
+            @Schema(description = "CPU 사용률 (%)")
+            @Nullable Double cpuUsage,
+            @Schema(description = "메모리 사용률 (%)")
+            @Nullable Double memoryUsage,
             @Schema(description = "마지막 safety_event의 지속 시간이 0이면 현재 진행 중인 안전 이벤트로 판단해서 전달, 아니면 null")
             @Nullable OngoingSafetyEvent ongoingSafetyEvent
     ) {
@@ -118,6 +134,8 @@ public class DeviceResponse {
                     device.getCameraStatus(),
                     device.getMicStatus(),
                     resolveHeartbeatStatus(device.getLastHeartbeatAt()),
+                    device.getCpuUsage(),
+                    device.getMemoryUsage(),
                     OngoingSafetyEvent.from(lastSafetyEvent)
             );
         }

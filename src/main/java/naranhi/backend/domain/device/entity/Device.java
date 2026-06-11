@@ -60,12 +60,21 @@ public class Device extends BaseEntity {
     @Column(name = "last_event_at")
     private LocalDateTime lastEventAt;
 
+    @Column(name = "cpu_usage")
+    private Double cpuUsage;
+
+    @Column(name = "memory_usage")
+    private Double memoryUsage;
+
     // 하트비트 수신 시
-    public void updateHeartbeat(LocalDateTime at, DeviceStatus cameraStatus, DeviceStatus micStatus) {
+    public void updateHeartbeat(LocalDateTime at, DeviceStatus cameraStatus, DeviceStatus micStatus,
+                                Double cpuUsage, Double memoryUsage) {
         this.lastHeartbeatAt = at;
         this.boardStatus = DeviceStatus.ONLINE;
         this.cameraStatus = cameraStatus;
         this.micStatus = micStatus;
+        this.cpuUsage = cpuUsage;
+        this.memoryUsage = memoryUsage;
     }
 
     // 컴포넌트 상태 변경 시
