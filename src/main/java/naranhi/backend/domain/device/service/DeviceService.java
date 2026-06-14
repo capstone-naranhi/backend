@@ -13,8 +13,8 @@ import naranhi.backend.domain.device.repository.MemberDeviceRepository;
 import naranhi.backend.domain.device.repository.mongo.DeviceStatusChangeLogRepository;
 import naranhi.backend.domain.member.entity.Member;
 import naranhi.backend.domain.member.repository.MemberRepository;
-import naranhi.backend.domain.safety.entity.SafetyEvent;
-import naranhi.backend.domain.safety.repository.SafetyEventRepository;
+import naranhi.backend.domain.safety.dto.DangerState;
+import naranhi.backend.domain.safety.service.DangerStateService;
 import naranhi.backend.global.exception.CustomException;
 import naranhi.backend.global.exception.ErrorCode;
 import naranhi.backend.log.document.DeviceStatusLog;
@@ -32,9 +32,9 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final MemberDeviceRepository memberDeviceRepository;
     private final MemberRepository memberRepository;
-    private final SafetyEventRepository safetyEventRepository;
     private final DeviceStatusChangeLogRepository deviceStatusChangeLogRepository;
     private final StringRedisTemplate redisTemplate;
+    private final DangerStateService dangerStateService;
 
     public DeviceResponse.DeviceDetail getDeviceDetail(Long memberId, Long deviceId) {
         if (!memberDeviceRepository.existsByMemberIdAndDeviceId(memberId, deviceId)) {
@@ -66,11 +66,11 @@ public class DeviceService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
-        SafetyEvent lastSafetyEvent = safetyEventRepository
-                .findTopByDeviceIdOrderByDetectedAtDesc(deviceId)
+        DangerState dangerState = dangerStateService
+                .getCurrent(device.getDeviceSerialNumber())
                 .orElse(null);
 
-        return DeviceResponse.LiveStreamStatus.of(device, lastSafetyEvent);
+        return DeviceResponse.LiveStreamStatus.of(device, dangerState);
     }
 
     @Transactional

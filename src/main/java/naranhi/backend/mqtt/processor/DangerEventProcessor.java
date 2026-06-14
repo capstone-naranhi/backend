@@ -20,6 +20,7 @@ import naranhi.backend.domain.notification.repository.SafetyNotificationReposito
 import naranhi.backend.domain.safety.entity.EventType;
 import naranhi.backend.domain.safety.entity.SafetyEvent;
 import naranhi.backend.domain.safety.repository.SafetyEventRepository;
+import naranhi.backend.domain.safety.service.DangerStateService;
 import naranhi.backend.fcm.FcmPayload;
 import naranhi.backend.fcm.FcmService;
 import naranhi.backend.log.service.MongoLogService;
@@ -40,6 +41,7 @@ public class DangerEventProcessor {
     private final NotificationRecipientRepository notificationRecipientRepository;
     private final FcmService fcmService;
     private final MongoLogService mongoLogService;
+    private final DangerStateService dangerStateService;
 
     public void process(DangerEventMessage message) {
         Device device = deviceRepository.findByDeviceSerialNumber(message.deviceSerial())
@@ -61,6 +63,8 @@ public class DangerEventProcessor {
             log.error("알 수 없는 EventType - serial: {}, eventType: {}", message.deviceSerial(), message.eventType());
             return;
         }
+
+        updateDangerState(message, eventType);
 
         Long notifId = saveMysql(message, device, memberIds, eventType);
 
@@ -137,5 +141,22 @@ public class DangerEventProcessor {
         );
 
         return notification.getId();
+    }
+
+    private void updateDangerState(DangerEventMessage message, EventType eventType) {
+        String serial = message.deviceSerial();
+        String severity = eventType.getDefaultSeverity().name();
+        LocalDateTime detectedAt = message.detectedAt() != null
+                ? message.detectedAt().toLocalDateTime()
+                : LocalDateTime.now();
+
+        if ("START".equals(message.phase())) {
+            dangerStateService.markStart(serial, eventType.name(), severity, detectedAt);
+        } else if ("END".equals(message.phase())) {
+            dangerStateService.markEnd(serial);
+        } else if (message.duration() != null && message.duration() > 0) {
+            dangerStateService.markDuration(serial, eventType.name(), severity, detectedAt, message.duration());
+        }
+        // phase 없음 + duration 0: 순간 이벤트 → Redis 상태 변경 없음
     }
 }

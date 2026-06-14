@@ -8,8 +8,7 @@ import naranhi.backend.domain.device.entity.Device;
 import naranhi.backend.domain.device.entity.DeviceStatus;
 import naranhi.backend.domain.notification.entity.ComponentStatus;
 import naranhi.backend.domain.notification.entity.ComponentType;
-import naranhi.backend.domain.safety.entity.EventType;
-import naranhi.backend.domain.safety.entity.SafetyEvent;
+import naranhi.backend.domain.safety.dto.DangerState;
 import naranhi.backend.domain.safety.entity.Severity;
 import naranhi.backend.log.document.DeviceStatusLog;
 
@@ -123,10 +122,10 @@ public class DeviceResponse {
             @Nullable Double cpuUsage,
             @Schema(description = "메모리 사용률 (%)")
             @Nullable Double memoryUsage,
-            @Schema(description = "마지막 safety_event의 지속 시간이 0이면 현재 진행 중인 안전 이벤트로 판단해서 전달, 아니면 null")
+            @Schema(description = "현재 진행 중인 위험 이벤트. phase=START 이거나 detectedAt+duration 이내이면 반환, 아니면 null")
             @Nullable OngoingSafetyEvent ongoingSafetyEvent
     ) {
-        public static LiveStreamStatus of(Device device, SafetyEvent lastSafetyEvent) {
+        public static LiveStreamStatus of(Device device, DangerState dangerState) {
             return new LiveStreamStatus(
                     device.getId(),
                     device.getDeviceName(),
@@ -136,7 +135,7 @@ public class DeviceResponse {
                     resolveHeartbeatStatus(device.getLastHeartbeatAt()),
                     device.getCpuUsage(),
                     device.getMemoryUsage(),
-                    OngoingSafetyEvent.from(lastSafetyEvent)
+                    OngoingSafetyEvent.from(dangerState)
             );
         }
     }
@@ -158,20 +157,25 @@ public class DeviceResponse {
     }
 
     public record OngoingSafetyEvent(
-            Long safetyEventId,
-            EventType eventType,
+            String eventType,
             Severity severity,
-            LocalDateTime detectedAt
+            LocalDateTime detectedAt,
+            @Schema(description = "phase=START이면 true(END 수신 전까지 지속), false이면 duration 기반")
+            boolean ongoing
     ) {
-        public static OngoingSafetyEvent from(SafetyEvent event) {
-            if (event == null || event.getDurationSecond() != 0) {
-                return null;
+        public static OngoingSafetyEvent from(DangerState state) {
+            if (state == null) return null;
+            Severity severity;
+            try {
+                severity = Severity.valueOf(state.severity());
+            } catch (IllegalArgumentException e) {
+                severity = Severity.CAUTION;
             }
             return new OngoingSafetyEvent(
-                    event.getId(),
-                    event.getEventType(),
-                    event.getSeverity(),
-                    event.getDetectedAt()
+                    state.eventType(),
+                    severity,
+                    state.detectedAt(),
+                    "START".equals(state.phase())
             );
         }
     }
