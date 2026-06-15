@@ -158,6 +158,20 @@ public class NotificationResponse {
                     sn.getSafetyEvent().getVideoUrl()
             );
         }
+
+        public static SafetyNotificationDetail from(SafetyNotification sn, String snapshotPresignedUrl, String videoPresignedUrl) {
+            return new SafetyNotificationDetail(
+                    sn.getDevice().getId(),
+                    sn.getDevice().getDeviceName(),
+                    EventTypeResponse.from(sn.getEventType()),
+                    sn.getSeverity(),
+                    sn.getSafetyEvent().getDurationSecond(),
+                    sn.getSafetyEvent().getConfidence(),
+                    sn.getSafetyEvent().getDetectedAt(),
+                    snapshotPresignedUrl,
+                    videoPresignedUrl
+            );
+        }
     }
 
     public record GeneralNotificationDetail(

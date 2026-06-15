@@ -56,6 +56,9 @@ dependencies {
     // ── FCM ───────────────────────────────────────────────────
     implementation 'com.google.firebase:firebase-admin:9.9.0'
 
+    // ── AWS S3 ────────────────────────────────────────────────
+    implementation 'software.amazon.awssdk:s3:2.31.2'
+
     // ── MQTT ───────────────────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-integration'
     implementation 'org.springframework.integration:spring-integration-mqtt'

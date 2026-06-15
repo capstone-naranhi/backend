@@ -15,3 +15,8 @@ spring:
     client-id: ${MQTT_CLIENT_ID}
     username: ${MQTT_USERNAME}
     password: ${MQTT_PASSWORD}
+
+  s3:
+    bucket: ${S3_BUCKET_NAME}
+    region: ${S3_REGION}
+    presigned-url-expiry-minutes: 10

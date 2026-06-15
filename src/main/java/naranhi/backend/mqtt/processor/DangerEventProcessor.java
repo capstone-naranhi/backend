@@ -25,6 +25,7 @@ import naranhi.backend.fcm.FcmPayload;
 import naranhi.backend.fcm.FcmService;
 import naranhi.backend.log.service.MongoLogService;
 import naranhi.backend.mqtt.dto.DangerEventMessage;
+import naranhi.backend.s3.PresignedUrlService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class DangerEventProcessor {
     private final FcmService fcmService;
     private final MongoLogService mongoLogService;
     private final DangerStateService dangerStateService;
+    private final PresignedUrlService presignedUrlService;
 
     public void process(DangerEventMessage message) {
         Device device = deviceRepository.findByDeviceSerialNumber(message.deviceSerial())
@@ -101,8 +103,8 @@ public class DangerEventProcessor {
                                 ? BigDecimal.valueOf(message.confidence())
                                 : null)
                         .durationSecond(message.duration())
-                        .snapshotUrl(message.snapshotUrl())
-                        .videoUrl(message.videoUrl())
+                        .snapshotUrl(presignedUrlService.buildPublicUrl(message.snapshotUrl()))
+                        .videoUrl(presignedUrlService.buildPublicUrl(message.videoUrl()))
                         .detectedAt(detectedAt)
                         .build()
         );
