@@ -31,11 +31,10 @@ public record FcmPayload(
         };
 
         String body = switch (eventType) {
-            case PRONE_SUFFOCATION, BLANKET_SUFFOCATION -> deviceName + "에서 감지됐어요. 지금 바로 확인해주세요.";
+            case UPSIDE_DOWN_SUFFOCATION, BLANKET_SUFFOCATION -> deviceName + "에서 감지됐어요. 지금 바로 확인해주세요.";
             case FALL -> deviceName + "에서 감지됐어요. 아이가 다치지 않았는지 확인해주세요.";
             case CLIMBING -> deviceName + "에서 감지됐어요. 아이가 난간을 오르고 있어요.";
             case CRYING -> deviceName + "에서 울음소리가 감지됐어요.";
-            case EXIT -> deviceName + "에서 아이가 침대를 벗어났어요.";
         };
 
         return new FcmPayload(

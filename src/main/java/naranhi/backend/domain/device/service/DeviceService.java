@@ -67,7 +67,7 @@ public class DeviceService {
                 .orElseThrow(() -> new CustomException(ErrorCode.DEVICE_NOT_FOUND));
 
         DangerState dangerState = dangerStateService
-                .getCurrent(device.getDeviceSerialNumber())
+                .getOngoingState(device.getDeviceSerialNumber())
                 .orElse(null);
 
         return DeviceResponse.LiveStreamStatus.of(device, dangerState);

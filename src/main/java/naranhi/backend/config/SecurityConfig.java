@@ -51,6 +51,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/signup",
                                 "/api/v1/auth/check-email",
                                 "/api/v1/auth/invalid-session",
+                                // S3 presigned URL (Jetson 보드 인증 없이 사용)
+                                "/api/v1/s3/presigned/**",
                                 // Swagger
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",

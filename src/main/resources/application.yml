@@ -18,5 +18,6 @@ spring:
 
   s3:
     bucket: ${S3_BUCKET_NAME}
-    region: ${S3_REGION}
+    region:
+      ${S3_REGION: us-east-1}
     presigned-url-expiry-minutes: 10

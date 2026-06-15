@@ -1,8 +1,6 @@
 package naranhi.backend.s3;
 
 import lombok.RequiredArgsConstructor;
-import naranhi.backend.auth.LoginUser;
-import naranhi.backend.auth.SessionUser;
 import naranhi.backend.global.response.ApiResponse;
 import naranhi.backend.s3.PresignedUrlService.UploadTarget;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +44,6 @@ public class S3Controller {
      */
     @GetMapping("/presigned/download")
     public ApiResponse<DownloadUrl> getDownloadUrl(
-            @LoginUser SessionUser loginUser,
             @RequestParam String key
     ) {
         return ApiResponse.ok(new DownloadUrl(presignedUrlService.generateGetUrl(key)));

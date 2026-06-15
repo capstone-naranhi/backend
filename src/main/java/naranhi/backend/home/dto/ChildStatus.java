@@ -1,18 +1,17 @@
 package naranhi.backend.home.dto;
 
-import naranhi.backend.domain.safety.entity.SafetyEvent;
+import naranhi.backend.domain.safety.dto.DangerState;
 
 public enum ChildStatus {
     SAFE, DANGER, CAUTION, INFO;
 
-    public static ChildStatus from(SafetyEvent lastEvent) {
-        if (lastEvent == null || lastEvent.getDurationSecond() == null || lastEvent.getDurationSecond() != 0) {
-            return SAFE;
-        }
-        return switch (lastEvent.getSeverity()) {
-            case DANGER -> DANGER;
-            case CAUTION -> CAUTION;
-            case INFO -> INFO;
+    public static ChildStatus from(DangerState state) {
+        if (state == null) return SAFE;
+        return switch (state.severity()) {
+            case "DANGER" -> DANGER;
+            case "CAUTION" -> CAUTION;
+            case "INFO" -> INFO;
+            default -> SAFE;
         };
     }
 }

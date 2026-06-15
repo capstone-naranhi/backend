@@ -13,6 +13,8 @@ public interface SafetyEventRepository extends JpaRepository<SafetyEvent, Long> 
 
     Optional<SafetyEvent> findTopByDeviceIdOrderByDetectedAtDesc(Long deviceId);
 
+    Optional<SafetyEvent> findTopByDevice_DeviceSerialNumberOrderByDetectedAtDesc(String deviceSerial);
+
     Optional<SafetyEvent> findTopByDeviceIdInOrderByDetectedAtDesc(List<Long> deviceIds);
 
     @Query("""

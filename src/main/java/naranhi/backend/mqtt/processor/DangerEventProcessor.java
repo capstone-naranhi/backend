@@ -52,12 +52,6 @@ public class DangerEventProcessor {
                     return new IllegalArgumentException("미등록 장치: " + message.deviceSerial());
                 });
 
-        List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerial());
-        if (memberIds.isEmpty()) {
-            log.warn("연결된 회원 없음 - serial: {}", message.deviceSerial());
-            return;
-        }
-
         EventType eventType;
         try {
             eventType = EventType.valueOf(message.eventType());
@@ -66,15 +60,42 @@ public class DangerEventProcessor {
             return;
         }
 
-        updateDangerState(message, eventType);
+        // END: Redis 위험 상태만 삭제, DB 저장/FCM 없음
+        if ("END".equals(message.phase())) {
+            dangerStateService.markEnd(message.deviceSerial());
+            log.info("위험 종료 - serial: {}, eventType: {}", message.deviceSerial(), eventType);
+            return;
+        }
+
+        // START: 동일 이벤트 진행 중이면 반복 발행 → skip
+        if ("START".equals(message.phase())) {
+            boolean isRepeat = dangerStateService.getCurrent(message.deviceSerial())
+                    .map(state -> state.eventType().equals(eventType.name()))
+                    .orElse(false);
+
+            LocalDateTime detectedAt = message.detectedAt() != null
+                    ? message.detectedAt().toLocalDateTime()
+                    : LocalDateTime.now();
+            dangerStateService.markStart(
+                    message.deviceSerial(), eventType.name(),
+                    eventType.getDefaultSeverity().name(), detectedAt);
+
+            if (isRepeat) {
+                log.info("위험 지속 중 (반복 발행) - serial: {}, eventType: {}", message.deviceSerial(), eventType);
+                return;
+            }
+        }
+
+        // 신규 이벤트: DB 저장 + FCM + 로그
+        List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerial());
+        if (memberIds.isEmpty()) {
+            log.warn("연결된 회원 없음 - serial: {}", message.deviceSerial());
+            return;
+        }
 
         Long notifId = saveMysql(message, device, memberIds, eventType);
 
-        FcmPayload payload = FcmPayload.ofSafety(
-                eventType,
-                device.getDeviceName(),
-                notifId
-        );
+        FcmPayload payload = FcmPayload.ofSafety(eventType, device.getDeviceName(), notifId);
         fcmService.sendToMembers(memberIds, payload, NotificationType.SAFETY);
 
         mongoLogService.saveDangerEventLog(message);
@@ -145,20 +166,4 @@ public class DangerEventProcessor {
         return notification.getId();
     }
 
-    private void updateDangerState(DangerEventMessage message, EventType eventType) {
-        String serial = message.deviceSerial();
-        String severity = eventType.getDefaultSeverity().name();
-        LocalDateTime detectedAt = message.detectedAt() != null
-                ? message.detectedAt().toLocalDateTime()
-                : LocalDateTime.now();
-
-        if ("START".equals(message.phase())) {
-            dangerStateService.markStart(serial, eventType.name(), severity, detectedAt);
-        } else if ("END".equals(message.phase())) {
-            dangerStateService.markEnd(serial);
-        } else if (message.duration() != null && message.duration() > 0) {
-            dangerStateService.markDuration(serial, eventType.name(), severity, detectedAt, message.duration());
-        }
-        // phase 없음 + duration 0: 순간 이벤트 → Redis 상태 변경 없음
-    }
 }

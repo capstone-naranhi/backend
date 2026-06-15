@@ -5,7 +5,7 @@ import java.util.List;
 import naranhi.backend.domain.device.entity.Device;
 import naranhi.backend.domain.device.entity.DeviceStatus;
 import naranhi.backend.domain.notification.dto.NotificationResponse;
-import naranhi.backend.domain.safety.entity.SafetyEvent;
+import naranhi.backend.domain.safety.dto.DangerState;
 
 public class HomeResponse {
 
@@ -31,8 +31,8 @@ public class HomeResponse {
             LocalDateTime evaluatedAt,
             ChildStatus childStatus
     ) {
-        public static CurrentStatus from(SafetyEvent lastEvent) {
-            return new CurrentStatus(LocalDateTime.now(), ChildStatus.from(lastEvent));
+        public static CurrentStatus from(DangerState ongoingState) {
+            return new CurrentStatus(LocalDateTime.now(), ChildStatus.from(ongoingState));
         }
     }
 

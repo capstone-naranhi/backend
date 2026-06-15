@@ -6,12 +6,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum EventType {
-    PRONE_SUFFOCATION("자세 뒤집힘 질식 위험", Severity.DANGER),
+    UPSIDE_DOWN_SUFFOCATION("뒤집힌 자세 질식 위험", Severity.DANGER),
     BLANKET_SUFFOCATION("이불 질식 위험", Severity.DANGER),
     FALL("낙상", Severity.DANGER),
     CLIMBING("가구 등반", Severity.CAUTION),
-    CRYING("울음", Severity.CAUTION),
-    EXIT("침대 벗어남", Severity.DANGER);
+    CRYING("울음", Severity.CAUTION);
 
     private final String description;
     private final Severity defaultSeverity;

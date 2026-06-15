@@ -8,6 +8,8 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import naranhi.backend.domain.safety.dto.DangerState;
+import naranhi.backend.domain.safety.entity.SafetyEvent;
+import naranhi.backend.domain.safety.repository.SafetyEventRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class DangerStateService {
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final SafetyEventRepository safetyEventRepository;
 
     /** phase=START 수신 시 호출 */
     public void markStart(String deviceSerial, String eventType, String severity, LocalDateTime detectedAt) {
@@ -36,17 +39,26 @@ public class DangerStateService {
         log.info("[위험상태] END 삭제 - serial: {}", deviceSerial);
     }
 
-    /** phase 없이 duration > 0인 이벤트 수신 시 호출 */
-    public void markDuration(String deviceSerial, String eventType, String severity,
-                             LocalDateTime detectedAt, int durationSeconds) {
-        LocalDateTime expiresAt = detectedAt.plusSeconds(durationSeconds);
-        long remainingSeconds = Duration.between(LocalDateTime.now(), expiresAt).getSeconds();
-        if (remainingSeconds <= 0) {
-            return; // 이미 만료된 이벤트
-        }
-        DangerState state = new DangerState(eventType, severity, detectedAt, null, expiresAt);
-        save(deviceSerial, state, Duration.ofSeconds(remainingSeconds));
-        log.info("[위험상태] DURATION 저장 - serial: {}, eventType: {}, 잔여: {}s", deviceSerial, eventType, remainingSeconds);
+    /**
+     * 현재 진행 중인 위험 상태 조회
+     * 1순위: Redis phase=START (END 수신 전)
+     * 2순위: DB 최근 이벤트 중 detectedAt + durationSecond > now
+     */
+    public Optional<DangerState> getOngoingState(String deviceSerial) {
+        Optional<DangerState> redisState = getCurrent(deviceSerial);
+        if (redisState.isPresent()) return redisState;
+
+        return safetyEventRepository
+                .findTopByDevice_DeviceSerialNumberOrderByDetectedAtDesc(deviceSerial)
+                .filter(e -> e.getDurationSecond() != null && e.getDurationSecond() > 0)
+                .filter(e -> e.getDetectedAt().plusSeconds(e.getDurationSecond()).isAfter(LocalDateTime.now()))
+                .map(e -> new DangerState(
+                        e.getEventType().name(),
+                        e.getSeverity().name(),
+                        e.getDetectedAt(),
+                        null,
+                        e.getDetectedAt().plusSeconds(e.getDurationSecond())
+                ));
     }
 
     /** 현재 위험 상태 조회 (키 없으면 빈 Optional) */
