@@ -16,7 +16,7 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
             JOIN FETCH nr.notification n
             WHERE nr.member.id = :memberId
             AND (:cursorId IS NULL OR n.id < :cursorId)
-            ORDER BY n.sentAt DESC, n.id DESC
+            ORDER BY n.id DESC
             """)
     List<NotificationRecipient> findByMemberWithCursor(
             @Param("memberId") Long memberId,
@@ -30,7 +30,7 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
             WHERE nr.member.id = :memberId
             AND n.type = :type
             AND (:cursorId IS NULL OR n.id < :cursorId)
-            ORDER BY n.sentAt DESC, n.id DESC
+            ORDER BY n.id DESC
             """)
     List<NotificationRecipient> findByMemberAndTypeWithCursor(
             @Param("memberId") Long memberId,
