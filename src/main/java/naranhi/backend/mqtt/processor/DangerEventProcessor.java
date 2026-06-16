@@ -67,26 +67,7 @@ public class DangerEventProcessor {
             return;
         }
 
-        // START: 동일 이벤트 진행 중이면 반복 발행 → skip
-        if ("START".equals(message.phase())) {
-            boolean isRepeat = dangerStateService.getCurrent(message.deviceSerial())
-                    .map(state -> state.eventType().equals(eventType.name()))
-                    .orElse(false);
-
-            LocalDateTime detectedAt = message.detectedAt() != null
-                    ? message.detectedAt().toLocalDateTime()
-                    : LocalDateTime.now();
-            dangerStateService.markStart(
-                    message.deviceSerial(), eventType.name(),
-                    eventType.getDefaultSeverity().name(), detectedAt);
-
-            if (isRepeat) {
-                log.info("위험 지속 중 (반복 발행) - serial: {}, eventType: {}", message.deviceSerial(), eventType);
-                return;
-            }
-        }
-
-        // 신규 이벤트: DB 저장 + FCM + 로그
+        // DB 저장 + FCM + 로그
         List<Long> memberIds = deviceRepository.findMemberIdsByDeviceSerialNumber(message.deviceSerial());
         if (memberIds.isEmpty()) {
             log.warn("연결된 회원 없음 - serial: {}", message.deviceSerial());
